@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Automata Simulator and Visualizer</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="background-glow background-glow-one"></div>
+  <div class="background-glow background-glow-two"></div>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-block">
+        <p class="eyebrow">Theory of Computation</p>
+        <h1>Automata Lab</h1>
+        <p class="brand-copy">
+          Define machines, inspect transitions, and step through strings with live graph feedback.
+        </p>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Automata sections">
+        <button type="button" class="nav-link active" data-view-target="dfa-panel">
+          <span class="nav-link-title">DFA</span>
+          <span class="nav-link-copy">Deterministic simulator</span>
+        </button>
+        <button type="button" class="nav-link" data-view-target="nfa-panel">
+          <span class="nav-link-title">NFA</span>
+          <span class="nav-link-copy">Epsilon closures and branching</span>
+        </button>
+        <button type="button" class="nav-link" data-view-target="converter-panel">
+          <span class="nav-link-title">Converter</span>
+          <span class="nav-link-copy">Subset construction output</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-card">
+        <h2>Highlights</h2>
+        <ul class="feature-list">
+          <li>Editable transition tables</li>
+          <li>Step-by-step execution logs</li>
+          <li>JSON import and export</li>
+          <li>Live graph state highlighting</li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="topbar-copy">
+          <p class="eyebrow">Interactive Classroom Tool</p>
+          <h2>Automata Simulator and Visualizer</h2>
+          <p class="subtitle">
+            Use plain characters for single-symbol alphabets, or enter comma-separated tokens when symbols contain multiple characters.
+          </p>
+        </div>
+
+        <div class="topbar-actions">
+          <div class="info-chip">
+            <span class="info-chip-label">Mode</span>
+            <strong>Standalone HTML / CSS / JS</strong>
+          </div>
+          <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+            <span id="theme-toggle-label">Switch to light theme</span>
+          </button>
+        </div>
+      </header>
+
+      <section id="dfa-panel" class="panel active" aria-labelledby="dfa-heading">
+        <div class="panel-grid">
+          <div class="stack-column">
+            <article class="card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Machine Setup</p>
+                  <h3 id="dfa-heading">DFA Simulator</h3>
+                </div>
+                <div class="inline-actions">
+                  <button type="button" id="dfa-generate-table" class="button">Generate Table</button>
+                  <button type="button" id="dfa-export-json" class="button secondary">Export JSON</button>
+                  <label class="button secondary file-button">
+                    Import JSON
+                    <input id="dfa-import-json" type="file" accept=".json,application/json" hidden>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <label class="field">
+                  <span>States</span>
+                  <input id="dfa-states" type="text" placeholder="q0,q1,q2">
+                </label>
+                <label class="field">
+                  <span>Alphabet</span>
+                  <input id="dfa-alphabet" type="text" placeholder="0,1">
+                </label>
+                <label class="field">
+                  <span>Start State</span>
+                  <input id="dfa-start" type="text" placeholder="q0">
+                </label>
+                <label class="field">
+                  <span>Final States</span>
+                  <input id="dfa-finals" type="text" placeholder="q1">
+                </label>
+              </div>
+
+              <div id="dfa-validation-messages" class="message-list" aria-live="polite"></div>
+            </article>
+
+            <article class="card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Transitions</p>
+                  <h3>DFA Transition Table</h3>
+                </div>
+                <p class="helper-copy">Each cell must contain exactly one valid target state.</p>
+              </div>
+
+              <div id="dfa-transition-wrapper" class="table-wrapper placeholder-panel">
+                Enter states and alphabet, then generate the transition table.
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Simulation</p>
+                  <h3>String Testing Panel</h3>
+                </div>
+                <div class="inline-actions">
+                  <button type="button" id="dfa-validate" class="button secondary">Validate</button>
+                  <button type="button" id="dfa-prepare" class="button">Prepare Steps</button>
+                  <button type="button" id="dfa-next-step" class="button secondary">Next Step</button>
+                  <button type="button" id="dfa-auto-play" class="button ghost">Auto Play</button>
+                  <button type="button" id="dfa-reset" class="button ghost">Reset</button>
+                </div>
+              </div>
+
+              <div class="simulation-grid">
+                <label class="field">
+                  <span>Input String</span>
+                  <input id="dfa-input-string" type="text" placeholder="10101 or token1,token2">
+                </label>
+              </div>
+
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <span>Status</span>
+                  <strong id="dfa-simulation-status" class="status-badge neutral">Awaiting simulation</strong>
+                </div>
+                <div class="stat-card">
+                  <span>Current State</span>
+                  <strong id="dfa-current-state">-</strong>
+                </div>
+                <div class="stat-card stat-card-wide">
+                  <span>Transition Path</span>
+                  <strong id="dfa-transition-path">-</strong>
+                </div>
+              </div>
+
+              <div id="dfa-step-log" class="step-log placeholder-panel">
+                Prepare a simulation to see the execution log.
+              </div>
+            </article>
+          </div>
+
+          <div class="stack-column">
+            <article class="card graph-card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Visualization</p>
+                  <h3>DFA Graph</h3>
+                </div>
+                <p class="helper-copy">Active states are highlighted during simulation.</p>
+              </div>
+
+              <div id="dfa-graph" class="graph-canvas placeholder-panel">
+                Validate the DFA to visualize its state graph.
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Summary</p>
+                  <h3>DFA Overview</h3>
+                </div>
+              </div>
+
+              <div id="dfa-transition-summary" class="automaton-summary placeholder-panel">
+                DFA details will appear here after validation.
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="nfa-panel" class="panel" aria-labelledby="nfa-heading">
+        <div class="panel-grid">
+          <div class="stack-column">
+            <article class="card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Machine Setup</p>
+                  <h3 id="nfa-heading">NFA Simulator</h3>
+                </div>
+                <div class="inline-actions">
+                  <button type="button" id="nfa-generate-table" class="button">Generate Table</button>
+                  <button type="button" id="nfa-export-json" class="button secondary">Export JSON</button>
+                  <label class="button secondary file-button">
+                    Import JSON
+                    <input id="nfa-import-json" type="file" accept=".json,application/json" hidden>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <label class="field">
+                  <span>States</span>
+                  <input id="nfa-states" type="text" placeholder="q0,q1,q2,q3">
+                </label>
+                <label class="field">
+                  <span>Alphabet</span>
+                  <input id="nfa-alphabet" type="text" placeholder="a,b">
+                </label>
+                <label class="field">
+                  <span>Start State</span>
+                  <input id="nfa-start" type="text" placeholder="q0">
+                </label>
+                <label class="field">
+                  <span>Final States</span>
+                  <input id="nfa-finals" type="text" placeholder="q3">
+                </label>
+              </div>
+
+              <p class="helper-copy helper-copy-block">
+                The NFA table supports multiple comma-separated targets per cell and includes an epsilon column automatically.
+              </p>
+
+              <div id="nfa-validation-messages" class="message-list" aria-live="polite"></div>
+            </article>
+
+            <article class="card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Transitions</p>
+                  <h3>NFA Transition Table</h3>
+                </div>
+                <p class="helper-copy">Leave cells empty when no transition exists.</p>
+              </div>
+
+              <div id="nfa-transition-wrapper" class="table-wrapper placeholder-panel">
+                Enter states and alphabet, then generate the transition table.
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Simulation</p>
+                  <h3>String Testing Panel</h3>
+                </div>
+                <div class="inline-actions">
+                  <button type="button" id="nfa-validate" class="button secondary">Validate</button>
+                  <button type="button" id="nfa-prepare" class="button">Prepare Steps</button>
+                  <button type="button" id="nfa-next-step" class="button secondary">Next Step</button>
+                  <button type="button" id="nfa-auto-play" class="button ghost">Auto Play</button>
+                  <button type="button" id="nfa-reset" class="button ghost">Reset</button>
+                </div>
+              </div>
+
+              <div class="simulation-grid">
+                <label class="field">
+                  <span>Input String</span>
+                  <input id="nfa-input-string" type="text" placeholder="abba or token1,token2">
+                </label>
+              </div>
+
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <span>Status</span>
+                  <strong id="nfa-simulation-status" class="status-badge neutral">Awaiting simulation</strong>
+                </div>
+                <div class="stat-card">
+                  <span>Active States</span>
+                  <strong id="nfa-current-states">-</strong>
+                </div>
+                <div class="stat-card stat-card-wide">
+                  <span>State-Set Trace</span>
+                  <strong id="nfa-closure-path">-</strong>
+                </div>
+              </div>
+
+              <div id="nfa-step-log" class="step-log placeholder-panel">
+                Prepare a simulation to see epsilon-closure and move steps.
+              </div>
+            </article>
+          </div>
+
+          <div class="stack-column">
+            <article class="card graph-card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Visualization</p>
+                  <h3>NFA Graph</h3>
+                </div>
+                <p class="helper-copy">Multiple active states can be highlighted together.</p>
+              </div>
+
+              <div id="nfa-graph" class="graph-canvas placeholder-panel">
+                Validate the NFA to visualize its state graph.
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Summary</p>
+                  <h3>NFA Overview</h3>
+                </div>
+              </div>
+
+              <div id="nfa-transition-summary" class="automaton-summary placeholder-panel">
+                NFA details will appear here after validation.
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="converter-panel" class="panel" aria-labelledby="converter-heading">
+        <div class="panel-grid">
+          <div class="stack-column">
+            <article class="card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Conversion</p>
+                  <h3 id="converter-heading">NFA to DFA Converter</h3>
+                </div>
+                <div class="inline-actions">
+                  <button type="button" id="convert-nfa-button" class="button">Convert Current NFA</button>
+                  <button type="button" id="converter-export-json" class="button secondary">Export DFA JSON</button>
+                </div>
+              </div>
+
+              <p class="helper-copy helper-copy-block">
+                The converter reads the currently validated NFA, computes subset states, and produces the equivalent DFA.
+              </p>
+
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <span>Source NFA</span>
+                  <strong id="converter-source-states">-</strong>
+                </div>
+                <div class="stat-card">
+                  <span>Result DFA</span>
+                  <strong id="converter-result-states">-</strong>
+                </div>
+                <div class="stat-card stat-card-wide">
+                  <span>Start State</span>
+                  <strong id="converter-start-state">-</strong>
+                </div>
+              </div>
+
+              <div id="converter-messages" class="message-list" aria-live="polite"></div>
+            </article>
+
+            <article class="card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Algorithm Trace</p>
+                  <h3>Subset Construction Log</h3>
+                </div>
+              </div>
+
+              <div id="converter-log" class="step-log placeholder-panel">
+                Convert a validated NFA to view the subset construction trace.
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Result</p>
+                  <h3>Equivalent DFA Summary</h3>
+                </div>
+              </div>
+
+              <div id="converter-summary" class="automaton-summary placeholder-panel">
+                Converted DFA details will appear here after running the converter.
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Transitions</p>
+                  <h3>Converted DFA Transition Table</h3>
+                </div>
+              </div>
+
+              <div id="converter-table-wrapper" class="table-wrapper placeholder-panel">
+                Converted transitions will appear here after running the converter.
+              </div>
+            </article>
+          </div>
+
+          <div class="stack-column">
+            <article class="card graph-card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Visualization</p>
+                  <h3>Converted Graph</h3>
+                </div>
+                <p class="helper-copy">Each DFA state represents an NFA state subset.</p>
+              </div>
+
+              <div id="converter-graph" class="graph-canvas placeholder-panel">
+                Run the conversion to visualize the equivalent DFA.
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
