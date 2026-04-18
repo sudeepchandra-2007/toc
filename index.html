@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,34 +11,72 @@
 <body>
   <div class="background-glow background-glow-one"></div>
   <div class="background-glow background-glow-two"></div>
+  <div class="background-mesh"></div>
+  <div class="background-noise"></div>
+  <div class="floating-theme-toggle">
+    <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" aria-pressed="false">
+      <span class="theme-toggle-track" aria-hidden="true">
+        <span class="theme-toggle-thumb"></span>
+      </span>
+      <span class="theme-toggle-copy">
+        <span class="theme-toggle-title">Theme</span>
+        <span id="theme-toggle-label">Light mode active</span>
+      </span>
+    </button>
+  </div>
 
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand-block">
-        <p class="eyebrow">Theory of Computation</p>
-        <h1>Automata Lab</h1>
+        <div class="brand-row">
+          <div class="brand-mark" aria-hidden="true">A</div>
+          <div class="brand-heading">
+            <p class="eyebrow">Finite Automata Workbench</p>
+            <h1>Automata Simulator</h1>
+          </div>
+        </div>
         <p class="brand-copy">
-          Define machines, inspect transitions, and step through strings with live graph feedback.
+          Model deterministic and nondeterministic finite automata, validate definitions, and inspect execution visually.
         </p>
+        <div class="sidebar-mini-grid" aria-hidden="true">
+          <div class="mini-stat">
+            <span>Modes</span>
+            <strong>DFA, NFA, Converter</strong>
+          </div>
+          <div class="mini-stat">
+            <span>Visualization</span>
+            <strong>Graph + step trace</strong>
+          </div>
+        </div>
       </div>
 
       <nav class="sidebar-nav" aria-label="Automata sections">
         <button type="button" class="nav-link active" data-view-target="dfa-panel">
-          <span class="nav-link-title">DFA</span>
-          <span class="nav-link-copy">Deterministic simulator</span>
+          <span class="nav-link-icon" aria-hidden="true">D</span>
+          <span class="nav-link-meta">
+            <span class="nav-link-title">DFA</span>
+            <span class="nav-link-copy">Deterministic simulator</span>
+          </span>
         </button>
         <button type="button" class="nav-link" data-view-target="nfa-panel">
-          <span class="nav-link-title">NFA</span>
-          <span class="nav-link-copy">Epsilon closures and branching</span>
+          <span class="nav-link-icon" aria-hidden="true">N</span>
+          <span class="nav-link-meta">
+            <span class="nav-link-title">NFA</span>
+            <span class="nav-link-copy">Epsilon closures and branching</span>
+          </span>
         </button>
         <button type="button" class="nav-link" data-view-target="converter-panel">
-          <span class="nav-link-title">Converter</span>
-          <span class="nav-link-copy">Subset construction output</span>
+          <span class="nav-link-icon" aria-hidden="true">C</span>
+          <span class="nav-link-meta">
+            <span class="nav-link-title">Converter</span>
+            <span class="nav-link-copy">Subset construction output</span>
+          </span>
         </button>
       </nav>
 
-      <div class="sidebar-card">
-        <h2>Highlights</h2>
+      <div class="sidebar-card sidebar-card-spotlight">
+        <p class="section-kicker">Capabilities</p>
+        <h2>Everything in one workspace</h2>
         <ul class="feature-list">
           <li>Editable transition tables</li>
           <li>Step-by-step execution logs</li>
@@ -51,21 +89,44 @@
     <main class="main-content">
       <header class="topbar">
         <div class="topbar-copy">
-          <p class="eyebrow">Interactive Classroom Tool</p>
+          <div class="hero-pill-row">
+            <span class="hero-pill">DFA</span>
+            <span class="hero-pill">NFA</span>
+            <span class="hero-pill">NFA to DFA</span>
+          </div>
+          <p class="eyebrow">Browser-Based Finite Automata Toolkit</p>
           <h2>Automata Simulator and Visualizer</h2>
           <p class="subtitle">
-            Use plain characters for single-symbol alphabets, or enter comma-separated tokens when symbols contain multiple characters.
+            Create finite automata, validate transition definitions, run strings step by step, and review conversions and graph behavior from one interface.
           </p>
         </div>
 
-        <div class="topbar-actions">
-          <div class="info-chip">
-            <span class="info-chip-label">Mode</span>
-            <strong>Standalone HTML / CSS / JS</strong>
+        <div class="topbar-side">
+          <div class="hero-metrics">
+            <div class="hero-metric">
+              <span>Simulation</span>
+              <strong>Deterministic and nondeterministic runs</strong>
+            </div>
+            <div class="hero-metric">
+              <span>Validation</span>
+              <strong>Machine checks before execution</strong>
+            </div>
+            <div class="hero-metric">
+              <span>Conversion</span>
+              <strong>Subset construction for NFA to DFA</strong>
+            </div>
+            <div class="hero-metric">
+              <span>Portability</span>
+              <strong>JSON import and export support</strong>
+            </div>
           </div>
-          <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
-            <span id="theme-toggle-label">Switch to light theme</span>
-          </button>
+
+          <div class="topbar-actions">
+            <div class="info-chip">
+              <span class="info-chip-label">Runtime</span>
+              <strong>Standalone browser app</strong>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -87,6 +148,10 @@
                   </label>
                 </div>
               </div>
+
+              <p class="helper-copy helper-copy-block">
+                The preloaded DFA sample updates in real time as you edit states, finals, and transitions.
+              </p>
 
               <div class="form-grid">
                 <label class="field">
@@ -237,7 +302,7 @@
               </div>
 
               <p class="helper-copy helper-copy-block">
-                The NFA table supports multiple comma-separated targets per cell and includes an epsilon column automatically.
+                The preloaded NFA sample updates in real time as you edit states, finals, and branching transitions, while keeping the last valid preview visible during incomplete edits. It also includes an epsilon column automatically.
               </p>
 
               <div id="nfa-validation-messages" class="message-list" aria-live="polite"></div>

@@ -3,7 +3,7 @@ const EMPTY_SET = "∅";
 const AUTO_PLAY_DELAY = 900;
 
 const appState = {
-  theme: localStorage.getItem("automata-theme") || "dark",
+  theme: localStorage.getItem("automata-theme") || "light",
   currentView: "dfa-panel",
   dfa: {
     automaton: null,
@@ -126,8 +126,7 @@ function bindThemeToggle() {
 
 function bindDfaEvents() {
   ui.dfa.generateTable.addEventListener("click", () => {
-    renderDfaTable();
-    clearSimulation("dfa");
+    syncDfaLiveDefinition({ rerenderTable: true, showMessages: true });
   });
   ui.dfa.validate.addEventListener("click", () => validateDfa(true));
   ui.dfa.prepare.addEventListener("click", prepareDfaSimulation);
@@ -137,18 +136,27 @@ function bindDfaEvents() {
   ui.dfa.exportJson.addEventListener("click", () => exportAutomaton("dfa"));
   ui.dfa.importJson.addEventListener("change", (event) => importAutomaton(event, "dfa"));
 
-  getDefinitionInputs("dfa").forEach((input) => {
-    input.addEventListener("input", () => clearSimulation("dfa"));
+  [ui.dfa.states, ui.dfa.alphabet].forEach((input) => {
+    input.addEventListener("input", () => syncDfaLiveDefinition({ rerenderTable: true, showMessages: true }));
   });
 
-  ui.dfa.transitionWrapper.addEventListener("input", () => clearSimulation("dfa"));
+  [ui.dfa.start, ui.dfa.finals].forEach((input) => {
+    input.addEventListener("input", () => syncDfaLiveDefinition({ showMessages: true }));
+  });
+
+  ui.dfa.inputString.addEventListener("input", () => clearSimulation("dfa"));
+
+  ui.dfa.transitionWrapper.addEventListener("input", (event) => {
+    if (!event.target.classList.contains("transition-input")) {
+      return;
+    }
+    syncDfaLiveDefinition({ showMessages: true });
+  });
 }
 
 function bindNfaEvents() {
   ui.nfa.generateTable.addEventListener("click", () => {
-    renderNfaTable();
-    clearSimulation("nfa");
-    clearConverterResults();
+    syncNfaLiveDefinition({ rerenderTable: true, showMessages: true });
   });
   ui.nfa.validate.addEventListener("click", () => validateNfa(true));
   ui.nfa.prepare.addEventListener("click", prepareNfaSimulation);
@@ -158,16 +166,21 @@ function bindNfaEvents() {
   ui.nfa.exportJson.addEventListener("click", () => exportAutomaton("nfa"));
   ui.nfa.importJson.addEventListener("change", (event) => importAutomaton(event, "nfa"));
 
-  getDefinitionInputs("nfa").forEach((input) => {
-    input.addEventListener("input", () => {
-      clearSimulation("nfa");
-      clearConverterResults();
-    });
+  [ui.nfa.states, ui.nfa.alphabet].forEach((input) => {
+    input.addEventListener("input", () => syncNfaLiveDefinition({ rerenderTable: true, showMessages: true }));
   });
 
-  ui.nfa.transitionWrapper.addEventListener("input", () => {
-    clearSimulation("nfa");
-    clearConverterResults();
+  [ui.nfa.start, ui.nfa.finals].forEach((input) => {
+    input.addEventListener("input", () => syncNfaLiveDefinition({ showMessages: true }));
+  });
+
+  ui.nfa.inputString.addEventListener("input", () => clearSimulation("nfa"));
+
+  ui.nfa.transitionWrapper.addEventListener("input", (event) => {
+    if (!event.target.classList.contains("transition-input")) {
+      return;
+    }
+    syncNfaLiveDefinition({ showMessages: true });
   });
 }
 
@@ -178,7 +191,9 @@ function bindConverterEvents() {
 
 function applyTheme(theme) {
   document.documentElement.dataset.theme = theme;
-  ui.themeToggleLabel.textContent = theme === "dark" ? "Switch to light theme" : "Switch to dark theme";
+  ui.themeToggleLabel.textContent = theme === "dark" ? "Dark" : "Light";
+  ui.themeToggle.setAttribute("aria-pressed", String(theme === "dark"));
+  ui.themeToggle.setAttribute("title", theme === "dark" ? "Switch to light theme" : "Switch to dark theme");
 }
 
 function seedExamples() {
@@ -196,7 +211,7 @@ function seedExamples() {
 
   const nfaExample = {
     type: "NFA",
-    states: ["q0", "q1", "q2", "q3"],
+    states: ["q0", "q1", "q2", "q3", "q4"],
     alphabet: ["a", "b"],
     startState: "q0",
     finalStates: ["q3"],
@@ -204,7 +219,8 @@ function seedExamples() {
       q0: { a: [], b: [], [EPSILON]: ["q1", "q2"] },
       q1: { a: ["q1"], b: ["q3"], [EPSILON]: [] },
       q2: { a: ["q3"], b: ["q2"], [EPSILON]: [] },
-      q3: { a: ["q3"], b: ["q3"], [EPSILON]: [] },
+      q3: { a: ["q3"], b: ["q4"], [EPSILON]: [] },
+      q4: { a: ["q2"], b: [], [EPSILON]: ["q1"] },
     },
   };
 
@@ -331,6 +347,29 @@ function buildDraftFromTransitionMap(transitions, allowMultiple = false) {
   return draft;
 }
 
+function syncDfaLiveDefinition({ rerenderTable = false, showMessages = true } = {}) {
+  stopAutoPlay("dfa");
+  appState.dfa.simulation = null;
+
+  if (rerenderTable) {
+    renderDfaTable();
+  }
+
+  validateDfa(showMessages);
+}
+
+function syncNfaLiveDefinition({ rerenderTable = false, showMessages = true } = {}) {
+  stopAutoPlay("nfa");
+  appState.nfa.simulation = null;
+  clearConverterResults();
+
+  if (rerenderTable) {
+    renderNfaTable();
+  }
+
+  validateNfa(showMessages, { preservePreviewOnError: true });
+}
+
 function validateDfa(showMessages = true) {
   stopAutoPlay("dfa");
 
@@ -420,7 +459,7 @@ function validateDfa(showMessages = true) {
   return automaton;
 }
 
-function validateNfa(showMessages = true) {
+function validateNfa(showMessages = true, { preservePreviewOnError = false } = {}) {
   stopAutoPlay("nfa");
 
   const states = parseCSVUnique(ui.nfa.states.value);
@@ -471,11 +510,17 @@ function validateNfa(showMessages = true) {
   }
 
   if (errors.length) {
-    appState.nfa.automaton = null;
     clearSimulation("nfa", false);
-    renderAutomatonSummary(ui.nfa.summary, null, "NFA details will appear here after validation.");
-    renderAutomatonGraph(ui.nfa.graph, null);
-    resetSimulationDisplay("nfa");
+
+    if (!preservePreviewOnError || !appState.nfa.automaton) {
+      appState.nfa.automaton = null;
+      renderAutomatonSummary(ui.nfa.summary, null, "NFA details will appear here after validation.");
+      renderAutomatonGraph(ui.nfa.graph, null);
+      resetSimulationDisplay("nfa");
+    } else {
+      resetSimulationDisplay("nfa");
+    }
+
     if (showMessages) {
       renderMessages(ui.nfa.validationMessages, errors, "error");
     }
