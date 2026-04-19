@@ -157,8 +157,8 @@ html[data-theme="light"] .background-mesh {
 
 .floating-theme-toggle {
   position: fixed;
-  top: 12px;
-  right: 10px;
+  top: 10px;
+  right: 8px;
   z-index: 12;
 }
 
@@ -197,17 +197,18 @@ html[data-theme="light"] .background-mesh {
 }
 
 .brand-mark {
-  display: grid;
-  place-items: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
-  color: var(--accent);
-  font-size: 1.15rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 10px 22px rgba(5, 5, 5, 0.22);
+}
+
+.brand-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .brand-heading h1,
@@ -520,18 +521,20 @@ html[data-theme="light"] .background-mesh {
 
 .theme-toggle {
   justify-content: flex-start;
-  min-width: 118px;
-  padding: 7px 10px;
-  gap: 8px;
+  min-width: 236px;
+  min-height: 84px;
+  padding: 14px 18px;
+  gap: 14px;
   border-color: var(--border);
   box-shadow: var(--shadow-soft);
+  border-radius: 18px;
 }
 
 .theme-toggle-track {
   position: relative;
-  flex: 0 0 38px;
-  width: 38px;
-  height: 22px;
+  flex: 0 0 76px;
+  width: 76px;
+  height: 44px;
   border-radius: 999px;
   background: rgba(var(--accent-rgb), 0.18);
   border: 1px solid rgba(var(--accent-rgb), 0.16);
@@ -542,13 +545,13 @@ html[data-theme="light"] .background-mesh {
 
 .theme-toggle-thumb {
   position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
+  top: 4px;
+  left: 4px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: #ffffff;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.22);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.22);
   transition: transform var(--transition-fast);
 }
 
@@ -568,11 +571,11 @@ html[data-theme="light"] .background-mesh {
 }
 
 .theme-toggle[aria-pressed="true"] .theme-toggle-thumb {
-  transform: translateX(16px);
+  transform: translateX(32px);
 }
 
 #theme-toggle-label {
-  font-size: 0.84rem;
+  font-size: 1.68rem;
   font-weight: 700;
   color: var(--text);
   line-height: 1;
@@ -1089,12 +1092,12 @@ html[data-theme="light"] .graph-canvas {
 
 @media (max-width: 900px) {
   .app-shell {
-    padding: 98px 16px 16px;
+    padding: 120px 16px 16px;
   }
 
   .floating-theme-toggle {
-    top: 12px;
-    right: 10px;
+    top: 10px;
+    right: 8px;
   }
 
   .sidebar,
@@ -1126,8 +1129,9 @@ html[data-theme="light"] .graph-canvas {
   }
 
   .theme-toggle {
-    min-width: 108px;
-    padding: 6px 9px;
+    min-width: 200px;
+    min-height: 72px;
+    padding: 12px 16px;
   }
 }
 
