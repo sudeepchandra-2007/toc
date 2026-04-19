@@ -869,15 +869,32 @@ function updateNfaButtons() {
 }
 
 function convertCurrentNfa() {
-  const nfa = validateNfa(true);
+  const validatedNfa = validateNfa(true, { preservePreviewOnError: true });
+  const nfa = validatedNfa || appState.nfa.automaton;
   if (!nfa) {
     return;
   }
 
   const converted = convertNfaToDfa(nfa);
   appState.converter.dfa = converted;
+  const simulatorDfa = makeDfaEditorFriendly(converted);
+  const loadedDfa = loadDfaIntoSimulator(
+    simulatorDfa,
+    "Converted DFA loaded from the current NFA and ready to simulate."
+  );
 
-  renderMessages(ui.converter.messages, ["Subset construction completed successfully."], "success");
+  renderMessages(
+    ui.converter.messages,
+    [
+      validatedNfa
+        ? "Subset construction completed successfully from the current NFA."
+        : "Converted the last valid NFA preview because the current draft still has validation issues.",
+      loadedDfa
+        ? "The equivalent DFA has also been loaded into the DFA simulator."
+        : "The equivalent DFA could not be loaded into the DFA simulator automatically.",
+    ],
+    loadedDfa ? "success" : "error"
+  );
   ui.converter.sourceStates.textContent = `${nfa.states.length} states`;
   ui.converter.resultStates.textContent = `${converted.states.length} states`;
   ui.converter.startState.textContent = converted.startState;
@@ -903,6 +920,51 @@ function convertCurrentNfa() {
   );
   renderReadOnlyTable(ui.converter.tableWrapper, converted);
   renderAutomatonGraph(ui.converter.graph, converted, new Set([converted.startState]));
+}
+
+function loadDfaIntoSimulator(automaton, message = "") {
+  populateAutomatonForm("dfa", automaton);
+  renderDfaTable(buildDraftFromTransitionMap(automaton.transitions));
+  ui.dfa.inputString.value = "";
+
+  const loaded = validateDfa(false);
+  if (loaded && message) {
+    renderMessages(ui.dfa.validationMessages, [message], "success");
+  }
+
+  return loaded;
+}
+
+function makeDfaEditorFriendly(automaton) {
+  const stateMap = Object.fromEntries(
+    automaton.states.map((state) => [state, toDfaEditorStateLabel(state)])
+  );
+  const transitions = {};
+
+  automaton.states.forEach((state) => {
+    const mappedState = stateMap[state];
+    transitions[mappedState] = {};
+
+    automaton.alphabet.forEach((symbol) => {
+      const target = automaton.transitions[state] ? automaton.transitions[state][symbol] : "";
+      transitions[mappedState][symbol] = Object.prototype.hasOwnProperty.call(stateMap, target)
+        ? stateMap[target]
+        : toDfaEditorStateLabel(target);
+    });
+  });
+
+  return {
+    type: "DFA",
+    states: automaton.states.map((state) => stateMap[state]),
+    alphabet: [...automaton.alphabet],
+    startState: stateMap[automaton.startState],
+    finalStates: automaton.finalStates.map((state) => stateMap[state]),
+    transitions,
+  };
+}
+
+function toDfaEditorStateLabel(label) {
+  return String(label || "").replace(/,\s*/g, "|");
 }
 
 function convertNfaToDfa(nfa) {
