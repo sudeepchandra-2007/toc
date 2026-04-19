@@ -1,101 +1,79 @@
 # Automata Simulator and Visualizer
 
-A complete web-based educational tool for building, simulating, and visualizing finite automata directly in the browser.
+Browser-based toolkit for building, validating, simulating, and converting finite automata with plain HTML, CSS, and JavaScript.
 
-This project is built with plain `HTML`, `CSS`, and `JavaScript`, with no backend required. It allows users to define and test both `DFA` and `NFA` machines, step through input strings, inspect execution logs, convert `NFA` to `DFA`, and view automata as interactive state graphs.
+No backend, build step, or framework is required. Open `index.html` in a modern browser and the app is ready to use.
+
+## Current Website Highlights
+
+- Light-first, responsive interface with a floating theme toggle
+- Live-edit DFA and NFA workspaces that refresh while you type
+- Step-by-step simulation logs with active-state graph highlighting
+- NFA support for branching transitions and epsilon moves
+- NFA -> DFA subset construction with a readable conversion trace
+- Converted DFA is automatically loaded into the DFA simulator
+- JSON import and export for DFA, NFA, and converted DFA definitions
 
 ## Features
 
 ### DFA Simulator
+
 - Define states, alphabet, start state, and final states
-- Build transitions using an editable grid UI
-- Validate DFA rules before simulation
-- Run input strings step by step
-- View accepted or rejected results
-- See the transition path and active state updates
+- Edit transitions in a grid-based table
+- Validate the machine in real time
+- Simulate input strings step by step
+- View accepted or rejected status
+- Track the current state and full path through the machine
 
 ### NFA Simulator
-- Support multiple target states per transition
-- Support epsilon (`ε`) transitions
-- Simulate branching behavior with epsilon-closure handling
-- Show active state sets during execution
-- View step-by-step state-set traces
+
+- Support multiple target states per symbol
+- Support epsilon transitions through a dedicated epsilon column
+- Show epsilon-closure behavior during simulation
+- Keep the last valid preview visible while incomplete edits are being typed
+- Display active state sets, traces, and graph updates in real time
 
 ### NFA to DFA Converter
-- Converts the currently defined NFA using subset construction
-- Displays the resulting DFA states, transitions, and final states
-- Shows a conversion trace log for learning and debugging
 
-### Visualization
-- Draws automata as graphs using SVG
-- Uses `D3.js` for pan and zoom enhancement when available
-- Highlights active states during simulation
-- Supports self-loops and bidirectional transitions
+- Converts the current NFA preview using subset construction
+- Shows the subset construction log, transition table, and converted graph
+- Displays subset membership for each generated DFA state
+- Loads the resulting DFA into the DFA section automatically for immediate simulation
 
-### UI and UX
-- Responsive layout for desktop and smaller screens
-- Sidebar navigation for DFA, NFA, and Converter views
-- Dark and light theme toggle
-- Modern card-based interface with smooth transitions
+### Visualization and UI
 
-### Extras Included
-- Import automata from JSON
-- Export DFA, NFA, and converted DFA as JSON
-- Preloaded sample DFA and NFA examples on page load
+- SVG-based automata graphs
+- Optional D3 pan and zoom enhancement when the CDN is available
+- Responsive dashboard layout with sidebar navigation
+- Professional light and dark themes
 
 ## Project Structure
 
 ```text
 toc/
-├── index.html
-├── style.css
-├── script.js
-└── README.md
+|-- index.html
+|-- style.css
+|-- script.js
+`-- README.md
 ```
 
-## How to Run
+## Run Locally
 
-1. Clone or download this repository.
-2. Open `index.html` in any modern web browser.
+1. Clone or download the repository.
+2. Open `index.html` in a modern web browser.
 
-That is all. No installation, build step, or server is required.
+That is all. No install process, package manager, or server is needed.
 
-## How to Use
+## Recommended Workflow
 
-### DFA
-1. Open the `DFA` section from the sidebar.
-2. Enter:
-   - states
-   - alphabet
-   - start state
-   - final states
-3. Click `Generate Table`.
-4. Fill the transition table.
-5. Click `Validate`.
-6. Enter an input string.
-7. Use `Prepare Steps`, `Next Step`, or `Auto Play` to simulate.
+1. Open either the DFA or NFA section from the sidebar.
+2. Edit the sample machine or import a JSON file.
+3. Update states, alphabet, finals, and transitions. The machine preview updates live.
+4. Enter an input string and use `Prepare`, `Next Step`, or `Auto Play` to simulate.
+5. For NFA conversion, open the Converter section and click `Convert Current NFA`.
+6. After conversion, switch to the DFA section to test the generated DFA immediately.
 
-### NFA
-1. Open the `NFA` section.
-2. Enter states, alphabet, start state, and final states.
-3. Click `Generate Table`.
-4. Fill the transition table.
-   - multiple targets can be comma separated
-   - epsilon moves go in the `ε` column
-5. Click `Validate`.
-6. Enter an input string and prepare the simulation.
-
-### Converter
-1. Build and validate an NFA first.
-2. Open the `Converter` section.
-3. Click `Convert Current NFA`.
-4. Inspect:
-   - subset construction log
-   - resulting DFA summary
-   - converted DFA transition table
-   - converted graph
-
-## JSON Format
+## JSON Import Format
 
 ### DFA Example
 
@@ -123,26 +101,19 @@ That is all. No installation, build step, or server is required.
   "startState": "q0",
   "finalStates": ["q2"],
   "transitions": {
-    "q0": { "a": ["q0", "q1"], "b": [], "ε": [] },
-    "q1": { "a": [], "b": ["q2"], "ε": [] },
-    "q2": { "a": [], "b": [], "ε": [] }
+    "q0": { "a": ["q0", "q1"], "b": [], "epsilon": ["q2"] },
+    "q1": { "a": [], "b": ["q2"], "epsilon": [] },
+    "q2": { "a": [], "b": [], "epsilon": [] }
   }
 }
 ```
 
-## Algorithms Used
-
-- DFA simulation
-- NFA simulation with epsilon-closure
-- Subset construction for `NFA → DFA` conversion
-- SVG-based graph rendering with optional D3 zoom behavior
-
 ## Notes
 
-- The app works by simply opening `index.html`.
-- If the D3 CDN is unavailable, the graph still renders because the core visualization is generated with SVG.
-- For multi-character alphabet symbols, comma-separated input tokens are supported.
+- Multi-character alphabet symbols are supported. Use comma-separated input tokens when needed.
+- If the D3 CDN is unavailable, the app still renders graphs through its built-in SVG output.
+- Converted subset states are normalized for the DFA editor so they remain editable and simulation-safe.
 
 ## License
 
-This project is open for learning, experimentation, and extension.
+Open for learning, experimentation, and extension.
