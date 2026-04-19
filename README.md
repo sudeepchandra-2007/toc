@@ -1,5 +1,7 @@
 # Automata Simulator and Visualizer
 
+## Tryout:https://toc-bay.vercel.app/
+
 Browser-based toolkit for building, validating, simulating, and converting finite automata with plain HTML, CSS, and JavaScript.
 
 No backend, build step, or framework is required. Open `index.html` in a modern browser and the app is ready to use.
